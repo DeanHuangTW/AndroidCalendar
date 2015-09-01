@@ -4,5 +4,7 @@
     <string name="app_name">AndroidCalendar</string>
     <string name="action_settings">Settings</string>
     <string name="chooseDay">date</string>
+    <string name="nextMonth">next</string>
+    <string name="preMonth">prev</string>
 
 </resources>

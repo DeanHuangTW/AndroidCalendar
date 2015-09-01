@@ -42,23 +42,9 @@ public class DayEvent {
 		ContentUris.appendId(builder, (long) days); // end day
 
 		// 提交查询
-		cur = cr.query(builder.build(), 
-		    INSTANCE_PROJECTION, 
-		    null, 
-		    null, 
-		    null);
-		/*
-		while (cur.moveToNext()) {
-		    long eventID = cur.getLong(PROJECTION_ID_INDEX);
-		    long beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
-		    String title = cur.getString(PROJECTION_TITLE_INDEX);
-
-		    Log.i(TAG, "Event:  " + eventID + "  title: " + title); 
-		    Calendar calendar = Calendar.getInstance();
-		    calendar.setTimeInMillis(beginVal);
-		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		    Log.i(TAG, "    Date: " + formatter.format(calendar.getTime()));
-		 }*/
+		cur = cr.query(builder.build(), INSTANCE_PROJECTION, 
+		    null, null, null);
+		
 		return cur;
 	}
 

@@ -11,6 +11,8 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.CalendarView;
 import android.widget.CalendarView.OnDateChangeListener;
 import android.widget.ListView;
@@ -25,9 +27,17 @@ public class MainActivity extends Activity{
 	private static final int PROJECTION_TITLE_INDEX = 2;
 	
 	private TextView mChooseDay;
+	private TextView mNextMon;
+	private TextView mPrevMon;
 	private ListView mEventList;
-	ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
+	private CalendarView mCalendarView;
+	
 	private SimpleAdapter adapter;
+	
+	// record selected date
+	private int mYear;
+	private int mMonth;
+	private int mDay;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,32 +46,82 @@ public class MainActivity extends Activity{
 		
 		mEventList = (ListView) findViewById(R.id.listView);
 		
-		
+		mNextMon = (TextView)  findViewById(R.id.nextMonth);
+		mPrevMon = (TextView)  findViewById(R.id.preMonth);
 		mChooseDay = (TextView)  findViewById(R.id.chooseDay);
 		// TextView default string is today
 		Calendar mCalendar = Calendar.getInstance();
-		int year = mCalendar.get(Calendar.YEAR);
-		int month = mCalendar.get(Calendar.MONTH) + 1;
-		int day = mCalendar.get(Calendar.DAY_OF_MONTH);
-		showDate(year, month, day);
+		mYear = mCalendar.get(Calendar.YEAR);
+		mMonth = mCalendar.get(Calendar.MONTH);
+		mDay = mCalendar.get(Calendar.DAY_OF_MONTH);
+		showDate(mYear, mMonth + 1, mDay);
 		
-		// click date
-		CalendarView calendarView=(CalendarView) findViewById(R.id.calendarView);
-		calendarView.setOnDateChangeListener(new OnDateChangeListener() {
+		mCalendarView=(CalendarView) findViewById(R.id.calendarView);
+		
+		addItemsEvent();		
+	}
+	
+	// Add items (TextView, CalendarView, ...) events
+	private void addItemsEvent() {
+		// click next month
+		mNextMon.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Log.v(TAG, "click next month");
+				Log.v(TAG, "   original date " + mYear + "/" + (mMonth+1) + "/" + mDay);
+				if (mMonth == 11) {
+					// next year
+					mMonth = 0;
+					mYear++;
+				} else {
+					mMonth++;
+				}
+				Log.v(TAG, "   new date " + mYear + "/" + (mMonth+1) + "/" + mDay);
+				Calendar newDate = Calendar.getInstance();
+				newDate.set(mYear, mMonth, mDay);
+				mCalendarView.setDate(newDate.getTimeInMillis());
+			}
+		});
+		
+		// click previous month
+		mPrevMon.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Log.v(TAG, "click previous month");
+				Log.v(TAG, "   original date " + mYear + "/" + (mMonth+1) + "/" + mDay);
+				if (mMonth == 0) {
+					// next year
+					mMonth = 11;
+					mYear--;
+				} else {
+					mMonth--;
+				}
+				Log.v(TAG, "   new date " + mYear + "/" + (mMonth+1) + "/" + mDay);
+				Calendar newDate = Calendar.getInstance();
+				newDate.set(mYear, mMonth, mDay);
+				mCalendarView.setDate(newDate.getTimeInMillis());
+			}
+		});
+		
+		// select day change
+		mCalendarView.setOnDateChangeListener(new OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+            	Log.v(TAG, "onSelectedDayChange");
             	// show choose day in textView
-            	showDate(year, month  + 1, dayOfMonth);
+            	mYear = year;
+            	mMonth = month;
+            	mDay = dayOfMonth;
+            	showDate(mYear, mMonth + 1, mDay);
             	// query events in this day
             	DayEvent dm = new DayEvent(year, month, dayOfMonth);
             	Cursor cur = dm.queryTodayEvent(getContentResolver());
-            	showEvent(cur);
+            	showDayEvents(cur);
             }
         });
 	}
 	
 	// add events to ListView
-	private void showEvent(Cursor cur) {
+	private void showDayEvents(Cursor cur) {
+		ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
 		while (cur.moveToNext()) {
 		    long eventID = cur.getLong(PROJECTION_ID_INDEX);
 		    long beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
@@ -69,8 +129,8 @@ public class MainActivity extends Activity{
 
 		    Calendar calendar = Calendar.getInstance();
 		    calendar.setTimeInMillis(beginVal);
-		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		    
+		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+
 		    HashMap<String,String> item = new HashMap<String,String>();
 		    item.put("Title", title);
 		    item.put("startTime", formatter.format(calendar.getTime()));

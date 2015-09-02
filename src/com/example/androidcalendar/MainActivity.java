@@ -8,11 +8,18 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CalendarView;
 import android.widget.CalendarView.OnDateChangeListener;
 import android.widget.ListView;
@@ -22,16 +29,12 @@ import android.widget.TextView;
 public class MainActivity extends Activity{
 	private String TAG = "MainActivity";
 	
-	private static final int PROJECTION_ID_INDEX = 0;
-	private static final int PROJECTION_BEGIN_INDEX = 1;
-	private static final int PROJECTION_TITLE_INDEX = 2;
 	
 	private TextView mChooseDay;
 	private TextView mNextMon;
 	private TextView mPrevMon;
 	private ListView mEventList;
-	private CalendarView mCalendarView;
-	
+	private CalendarView mCalendarView;	
 	private SimpleAdapter adapter;
 	
 	// record selected date
@@ -61,7 +64,7 @@ public class MainActivity extends Activity{
 		addItemsEvent();		
 	}
 	
-	// Add items (TextView, CalendarView, ...) events
+	// Process items (TextView, ListView, CalendarView, ...) touch events
 	private void addItemsEvent() {
 		// click next month
 		mNextMon.setOnClickListener(new OnClickListener() {
@@ -88,7 +91,7 @@ public class MainActivity extends Activity{
 				Log.v(TAG, "click previous month");
 				Log.v(TAG, "   original date " + mYear + "/" + (mMonth+1) + "/" + mDay);
 				if (mMonth == 0) {
-					// next year
+					// previous year
 					mMonth = 11;
 					mYear--;
 				} else {
@@ -117,21 +120,49 @@ public class MainActivity extends Activity{
             	showDayEvents(cur);
             }
         });
+		
+		// click a event on ListView
+		mEventList.setOnItemClickListener(new OnItemClickListener() {  
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) { 
+            	Log.v(TAG, "ListView click event");
+            	HashMap<String,String> data = (HashMap<String,String>)mEventList.getItemAtPosition(position);
+            	int eventId = Integer.parseInt(data.get("ID"));
+            	
+            	Cursor cur = DayEvent.queryEvntById(getContentResolver(), eventId);
+            	
+            	while (cur.moveToNext()) {
+	    		    long endVal = cur.getLong(DayEvent.PROJ_END_INDEX);
+	    		    long beginVal = cur.getLong(DayEvent.PROJ_BEGIN_INDEX);
+	    		    String title = cur.getString(DayEvent.PROJ_TITLE_INDEX);
+	    		    String desc = cur.getString(DayEvent.PROJ_DESC_INDEX);
+	    		    int allDay = cur.getInt(DayEvent.PROJ_ALLDAY_INDEX);
+	
+	    		    Calendar calendar = Calendar.getInstance();
+	    		    calendar.setTimeInMillis(beginVal);
+	    		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+	
+	    		    Log.i(TAG, title + " " + formatter.format(beginVal) + " - " + formatter.format(endVal));
+	    		    Log.i(TAG, "Description:" + desc + "\nallDay: " + allDay);
+            	}
+            }
+        }); 
 	}
 	
 	// add events to ListView
 	private void showDayEvents(Cursor cur) {
 		ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
 		while (cur.moveToNext()) {
-		    long eventID = cur.getLong(PROJECTION_ID_INDEX);
-		    long beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
-		    String title = cur.getString(PROJECTION_TITLE_INDEX);
+		    long eventID = cur.getLong(DayEvent.PROJ_ID_INDEX);
+		    long beginVal = cur.getLong(DayEvent.PROJ_BEGIN_INDEX);
+		    String title = cur.getString(DayEvent.PROJ_TITLE_INDEX);
 
 		    Calendar calendar = Calendar.getInstance();
 		    calendar.setTimeInMillis(beginVal);
 		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm");
 
 		    HashMap<String,String> item = new HashMap<String,String>();
+		    item.put("ID", String.valueOf(eventID)); // ID will not shown in ListView
 		    item.put("Title", title);
 		    item.put("startTime", formatter.format(calendar.getTime()));
 		    list.add(item);

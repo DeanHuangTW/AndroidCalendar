@@ -22,13 +22,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/chooseDay"
-        android:layout_alignStart="@+id/chooseDay"
-        android:layout_alignLeft="@+id/chooseDay" />
+        android:layout_alignLeft="@+id/chooseDay"
+        android:layout_alignStart="@+id/chooseDay" />
     
-	<ListView	    
+	<ListView
 	    android:id="@+id/listView"
-	    android:layout_width="fill_parent" 
+	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
+	    android:layout_above="@+id/addEvent"
 	    android:layout_below="@+id/chooseDay" />
 
 	<TextView
@@ -49,5 +50,15 @@
 	    android:layout_toLeftOf="@+id/nextMonth"
 	    android:clickable="true"
 	    android:text="@string/preMonth" />
+
+	<Button
+	    android:id="@+id/addEvent"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignLeft="@+id/preMonth"
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignRight="@+id/listView"
+	    android:text="@string/addEvent"
+	    android:textSize="10dp" />
 
 </RelativeLayout>

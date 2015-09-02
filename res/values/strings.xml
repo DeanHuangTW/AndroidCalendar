@@ -6,5 +6,6 @@
     <string name="chooseDay">date</string>
     <string name="nextMonth">next</string>
     <string name="preMonth">prev</string>
+    <string name="addEvent">Add Event</string>
 
 </resources>

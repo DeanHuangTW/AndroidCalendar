@@ -26,8 +26,8 @@ public class DayEvent {
 	// About all filed, refer to CalendarContract.instance
 	public static final String[] INSTANCE_PROJECTION = new String[] {
 		    Instances.EVENT_ID,      // 0
-		    Instances.TITLE,        // 2
-		    Instances.BEGIN         // 1
+		    Instances.TITLE,         // 1
+		    Instances.BEGIN         // 2
 	};
 	
 	// About all filed, refer to CalendarContract.Events
@@ -66,36 +66,22 @@ public class DayEvent {
 	// query today's event
 	public Cursor queryTodayEvent(ContentResolver cr) {
 		Calendar beginTime = Calendar.getInstance();
-		beginTime.set(mYear, mMonth, mDay);
-		  
+		beginTime.set(mYear, mMonth, mDay, 0, 0);
+		long startMillis = beginTime.getTimeInMillis();
+		Calendar endTime = Calendar.getInstance();
+		endTime.set(mYear, mMonth, mDay, 23, 59);
+		long endMillis = endTime.getTimeInMillis();
+		
 		Cursor cur = null;
-		double days = dateToJulian(beginTime);
-		// url: Instances.CONTENT_BY_DAY_URI/beginDay/endDay
-		Uri.Builder builder = Instances.CONTENT_BY_DAY_URI.buildUpon();
-		ContentUris.appendId(builder, (long) days); // start day
-		ContentUris.appendId(builder, (long) days); // end day
-
+		Uri.Builder builder = Instances.CONTENT_URI.buildUpon();
+		ContentUris.appendId(builder, startMillis);
+		ContentUris.appendId(builder, endMillis);
+		
 		// query event ID, title, begin time.
 		cur = cr.query(builder.build(), INSTANCE_PROJECTION, 
-		    null, null, null);
+		    null, null, Events.DTSTART + " ASC");
 		
 		return cur;
 	}
 
-	// change date to Julian day
-	public static double dateToJulian(Calendar date) {
-	    int year = date.get(Calendar.YEAR);
-	    int month = date.get(Calendar.MONTH)+1;
-	    int day = date.get(Calendar.DAY_OF_MONTH);
-	    int hour = date.get(Calendar.HOUR_OF_DAY);
-	    int minute = date.get(Calendar.MINUTE);
-	    int second = date.get(Calendar.SECOND);
-
-	    double extra = (100.0 * year) + month - 190002.5;
-	    return (367.0 * year) -
-	    	(Math.floor(7.0 * (year + Math.floor((month + 9.0) / 12.0)) / 4.0)) + 
-	    	Math.floor((275.0 * month) / 9.0) +  
-	    	day + ((hour + ((minute + (second / 60.0)) / 60.0)) / 24.0) +
-	    	1721013.5 - ((0.5 * extra) / Math.abs(extra)) + 0.5;
-	  }
 }

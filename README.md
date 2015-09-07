@@ -12,4 +12,4 @@ Min SDK; 4.0 <br />
 target SDK: 4.2 <br />
 Max SDK: 4.4 <br />
 
-![github](http://s22.postimg.org/w1y4g67f3/20150902150024.png "calendar")
+![github](https://github.com/DeanHuangTW/AndroidCalendar/blob/master/1.png "github")
